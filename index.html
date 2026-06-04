@@ -1,11 +1,120 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
-    <title>我的网站</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>词汇表导航 | SundayLunchCH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f5f7fb;
+            padding: 2rem 1rem;
+            color: #1e293b;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .sub {
+            color: #475569;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 0.5rem;
+        }
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #0f172a;
+        }
+        .list {
+            padding: 0.5rem 0;
+        }
+        .list a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .list a:hover {
+            background-color: #eff6ff;
+            border-left-color: #3b82f6;
+            padding-left: 1.8rem;
+        }
+        .list a::before {
+            content: "📄";
+            font-size: 1.1rem;
+        }
+        .footer {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 2rem;
+        }
+        hr {
+            margin: 1rem 0;
+            border-color: #e2e8f0;
+        }
+    </style>
 </head>
 <body>
-    <h1>网站建设中！</h1>
-    <p>这是一个临时的首页。</p>
+<div class="container">
+    <header>
+        <h1>📚 词汇复习手册</h1>
+        <div class="sub">点击下方链接进入对应的词汇表</div>
+    </header>
+
+    <div class="card">
+        <div class="card-header">
+            🗂️ 3S 词汇复习
+        </div>
+        <div class="list">
+            <!-- 
+                👇 在这里逐个添加你的 .html 文件链接 
+                格式：<a href="3S-vocabulary review/文件名.html">显示的标题</a>
+                注意：如果文件名或文件夹名有空格，不用额外处理，直接写即可
+            -->
+            <a href="1-15words.html">Unit 1</a>
+            <a href="16-30words.html">Unit 2</a>
+            <a href="31-45words.html">Unit 3</a>
+            <!-- 继续按照上面的格式添加更多链接 -->
+        </div>
+    </div>
+
+    <div class="footer">
+        📍 提示：如果点击链接后找不到页面，请检查文件名是否与仓库中的完全一致（包括大小写、扩展名 .html）<br>
+        需要添加新词汇表？编辑此文件，在 <strong>.list</strong> 区域增加一行即可。
+    </div>
+</div>
 </body>
 </html>
