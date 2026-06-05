@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3S 词汇自主通关练习 (词汇练习网页进阶版)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght=400;500;600;700&family=Noto+Sans+SC:wght=400;500;700&display=swap');
+        
+        body {
+            font-family: 'Quicksand', 'Noto Sans SC', sans-serif;
+            background-color: #f0f7f4;
+        }
+        .card-flip {
+            perspective: 1000px;
+        }
+        .card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card-flipped {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            backface-visibility: hidden;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-800">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white border-b border-slate-100 shadow-sm sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-500 text-white p-2 rounded-xl shadow-md shadow-emerald-100">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-800 leading-tight">3S 英语词汇练习</h1>
+                    <p class="text-xs text-slate-400 font-medium">精选词汇集 · 词汇练习网页进阶版</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full border border-emerald-100 flex items-center gap-1">
+                    <i class="fa-solid fa-fire animate-pulse text-amber-500"></i> <span id="mastery-counter">0/15</span> 已掌握
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
+        
+        <!-- Mode Switcher (Tabs) -->
+        <div class="bg-slate-100 p-1.5 rounded-2xl flex gap-1 shadow-inner">
+            <button onclick="switchTab('list')" id="tab-list" class="flex-1 py-3 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 bg-white text-emerald-600 shadow-sm">
+                <i class="fa-solid fa-list-ul"></i> 词汇清单
+            </button>
+            <button onclick="switchTab('card')" id="tab-card" class="flex-1 py-3 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800">
+                <i class="fa-solid fa-clone"></i> 闪卡预习
+            </button>
+            <button onclick="switchTab('spell')" id="tab-spell" class="flex-1 py-3 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800">
+                <i class="fa-solid fa-keyboard"></i> 拼写挑战
+            </button>
+            <button onclick="switchTab('translate')" id="tab-translate" class="flex-1 py-3 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800">
+                <i class="fa-solid fa-language"></i> 划线翻译
+            </button>
+            <button onclick="switchTab('test')" id="tab-test" class="flex-1 py-3 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800">
+                <i class="fa-solid fa-square-check"></i> 综合测试
+            </button>
+        </div>
+
+        <!-- 1. WORD LIST VIEW -->
+        <section id="view-list" class="space-y-4">
+            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-book-open text-emerald-500"></i> 词汇汇总清单
+                    </h2>
+                    <p class="text-slate-500 text-sm mt-1">点击发音按钮可聆听英式发音，点击心形可标记为已掌握。</p>
+                </div>
+                <button onclick="playAllWords()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 self-start md:self-auto">
+                    <i class="fa-solid fa-volume-high text-emerald-500"></i> 顺序朗读全词表
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="word-list-grid">
+                <!-- Dynamically populated list -->
+            </div>
+        </section>
+
+        <!-- 2. FLASHCARD VIEW -->
+        <section id="view-card" class="hidden space-y-6 max-w-xl mx-auto w-full">
+            <div class="text-center">
+                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100" id="card-progress-num">Card 1 / 15</span>
+                <h2 class="text-lg font-bold text-slate-800 mt-2">点击卡片可翻转查看释义与例句</h2>
+            </div>
+
+            <!-- The Card -->
+            <div class="card-flip w-full h-80 cursor-pointer" onclick="flipCard()">
+                <div id="flashcard-inner" class="card-inner w-full h-full relative duration-500">
+                    <!-- Front side (English) -->
+                    <div class="card-front absolute inset-0 bg-white rounded-3xl shadow-md border border-slate-100 p-8 flex flex-col items-center justify-between">
+                        <div class="w-full flex justify-between items-center text-slate-300">
+                            <span class="text-sm font-semibold" id="card-front-index">#1</span>
+                            <button onclick="speakWord(event)" id="card-front-speak" class="text-slate-400 hover:text-emerald-500 transition-colors p-2 rounded-full hover:bg-slate-50">
+                                <i class="fa-solid fa-volume-high text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="text-center flex-grow flex flex-col justify-center">
+                            <h3 class="text-4xl font-extrabold text-slate-800 tracking-wide" id="card-front-word">true</h3>
+                            <p class="text-emerald-500 font-medium text-lg mt-2" id="card-front-ipa">/truː/</p>
+                        </div>
+                        <div class="text-slate-400 text-xs font-medium flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate"></i> 点击翻面查看中文
+                        </div>
+                    </div>
+                    <!-- Back side (Chinese) -->
+                    <div class="card-back absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl shadow-md border border-emerald-100 p-8 flex flex-col items-center justify-between">
+                        <div class="w-full flex justify-between items-center text-slate-400">
+                            <span class="text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md" id="card-back-pos">adj.</span>
+                            <span class="text-xs text-slate-400" id="card-back-index">#1</span>
+                        </div>
+                        <div class="text-center flex-grow flex flex-col justify-center items-center px-4">
+                            <h3 class="text-3xl font-bold text-slate-800" id="card-back-chinese">真实的；正确的</h3>
+                            <div class="mt-4 p-3 bg-white/70 rounded-2xl border border-emerald-100/50 max-w-sm">
+                                <p class="text-xs text-slate-400 font-bold mb-1">CONTEXTUAL SENTENCE</p>
+                                <p class="text-sm text-slate-700 leading-relaxed italic" id="card-back-sentence">The exciting story is based on a <u>true</u> event.</p>
+                            </div>
+                        </div>
+                        <div class="text-emerald-600 text-xs font-medium flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate"></i> 点击返回正面
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex items-center justify-between gap-4">
+                <button onclick="prevCard()" class="flex-1 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 py-3.5 rounded-2xl font-bold transition-all shadow-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> 上一个
+                </button>
+                <button onclick="markCurrentCardMastered()" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 p-3.5 rounded-2xl transition-all shadow-sm flex items-center justify-center" title="标记为已掌握">
+                    <i id="card-mastery-icon" class="fa-regular fa-heart text-xl"></i>
+                </button>
+                <button onclick="nextCard()" class="flex-grow bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 rounded-2xl font-bold transition-all shadow-md shadow-emerald-100 flex items-center justify-center gap-2">
+                    下一个 <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- 3. SPELLING CHALLENGE VIEW -->
+        <section id="view-spell" class="hidden space-y-6 max-w-xl mx-auto w-full">
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-50 pb-4">
+                    <div>
+                        <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">拼写通关</span>
+                        <h2 class="text-lg font-bold text-slate-800 mt-1">听音看义，写出正确的英语单词或短语</h2>
+                    </div>
+                    <span class="text-sm font-semibold text-slate-400" id="spell-progress">1 / 15</span>
+                </div>
+
+                <div class="flex flex-col items-center justify-center py-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-md" id="spell-pos">adj.</span>
+                        <span class="text-2xl font-extrabold text-slate-800" id="spell-meaning">真实的；正确的</span>
+                    </div>
+                    
+                    <button onclick="speakSpellWord()" class="mt-2 bg-emerald-500 hover:bg-emerald-600 text-white w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg shadow-emerald-100 hover:scale-105 active:scale-95">
+                        <i class="fa-solid fa-volume-high text-xl"></i>
+                    </button>
+                    <span class="text-xs text-slate-400 font-medium">点击听发音</span>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <label for="spell-input" class="block text-xs font-bold uppercase tracking-wider text-slate-400">你的拼写答案：</label>
+                        <span class="text-xs text-slate-400 font-medium animate-pulse" id="spell-format-tip"></span>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="spell-input" autocomplete="off" spellcheck="false" class="w-full text-center text-xl font-bold tracking-normal text-slate-800 border-2 border-slate-200 rounded-2xl py-4 px-6 focus:border-emerald-500 focus:ring-0 focus:outline-none transition-all" placeholder="输入单词或短语...">
+                        <div id="spell-feedback-icon" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-2xl hidden"></div>
+                    </div>
+                </div>
+
+                <div id="spell-feedback-msg" class="hidden text-center text-sm font-semibold p-3 rounded-xl"></div>
+
+                <div class="flex gap-3">
+                    <button onclick="showSpellAnswer()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-2xl font-bold transition-all text-sm">
+                        查看提示
+                    </button>
+                    <button onclick="checkSpell()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 rounded-2xl font-bold transition-all shadow-md shadow-emerald-100 text-sm">
+                        提交核对
+                    </button>
+                    <button onclick="nextSpell()" id="spell-next-btn" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white py-3.5 rounded-2xl font-bold transition-all text-sm flex items-center justify-center gap-1">
+                        跳过/下一个 <i class="fa-solid fa-angle-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. CONTEXTUAL TRANSLATION VIEW -->
+        <section id="view-translate" class="hidden space-y-6 max-w-2xl mx-auto w-full">
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+                <div>
+                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">划线翻译挑战</span>
+                    <h2 class="text-lg font-bold text-slate-800 mt-1.5">翻译英文句子中划线的核心词汇</h2>
+                    <p class="text-slate-400 text-xs mt-0.5">请重点关注划线的英文单词或短语在句中的含义，在脑海中想出中文，点击可显示对照。</p>
+                </div>
+
+                <div class="space-y-4" id="translate-sentences-list">
+                    <!-- Dynamic sentence items -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. REVIEW TEST VIEW -->
+        <section id="view-test" class="hidden space-y-6 max-w-xl mx-auto w-full">
+            <div id="test-intro" class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm text-center space-y-6">
+                <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-500 text-3xl">
+                    <i class="fa-solid fa-spell-check"></i>
+                </div>
+                <div class="space-y-2">
+                    <h2 class="text-2xl font-extrabold text-slate-800">词汇综合自测</h2>
+                    <p class="text-slate-500 text-sm max-w-md mx-auto">系统将随机生成 10 道综合测试题（包括英译中单选、听音选词、拼写填空），全面检验你的掌握度。</p>
+                </div>
+                <button onclick="startTest()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-2xl font-bold transition-all shadow-lg shadow-emerald-100 text-base">
+                    开始自测挑战
+                </button>
+            </div>
+
+            <div id="test-play" class="hidden bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-50 pb-4">
+                    <div>
+                        <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full" id="test-question-type">英译中选择题</span>
+                        <h2 class="text-base font-bold text-slate-800 mt-1.5" id="test-question-title">题目加载中...</h2>
+                    </div>
+                    <span class="text-sm font-semibold text-slate-400" id="test-progress-num">1 / 10</span>
+                </div>
+
+                <div id="test-audio-container" class="hidden flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 gap-2">
+                    <button onclick="speakTestWord()" class="bg-emerald-500 hover:bg-emerald-600 text-white w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-md">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                    <span class="text-xs text-slate-400 font-medium">点击播放发音</span>
+                </div>
+
+                <div id="test-options" class="grid grid-cols-1 gap-3">
+                    <!-- Option buttons -->
+                </div>
+
+                <div id="test-spelling-container" class="hidden space-y-3">
+                    <div class="flex justify-between items-center text-xs text-slate-400 font-medium">
+                        <span>请输入：</span>
+                        <span id="test-spelling-tip"></span>
+                    </div>
+                    <input type="text" id="test-spelling-input" autocomplete="off" class="w-full text-center text-lg font-bold border-2 border-slate-200 rounded-2xl py-3 px-4 focus:border-emerald-500 focus:outline-none" placeholder="输入对应英文...">
+                    <button onclick="submitTestSpelling()" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-3.5 rounded-2xl font-bold transition-all">提交答案</button>
+                </div>
+
+                <button onclick="nextTestQuestion()" id="test-next-btn" class="hidden w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
+                    下一题 <i class="fa-solid fa-angle-right"></i>
+                </button>
+            </div>
+
+            <div id="test-result" class="hidden bg-white p-8 rounded-3xl border border-slate-100 shadow-sm text-center space-y-6">
+                <div class="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mx-auto text-amber-500 text-4xl" id="test-result-icon">
+                    <i class="fa-solid fa-medal animate-bounce"></i>
+                </div>
+                <div class="space-y-2">
+                    <h2 class="text-2xl font-extrabold text-slate-800">测试挑战完成！</h2>
+                    <p class="text-emerald-600 text-3xl font-extrabold" id="test-score-display">100 / 100</p>
+                    <p class="text-slate-500 text-sm max-w-xs mx-auto" id="test-result-feedback">哇！你太棒了，完美掌握了这组全部词汇！</p>
+                </div>
+                
+                <div class="border-t border-slate-100 pt-5 flex gap-3">
+                    <button onclick="restartTest()" class="flex-grow bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 rounded-2xl font-bold transition-all">
+                        再考一次
+                    </button>
+                    <button onclick="switchTab('list')" class="flex-grow bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-2xl font-bold transition-all">
+                        返回词表
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Custom Floating Alert Modal -->
+    <div id="custom-toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900/95 text-white py-3.5 px-6 rounded-2xl shadow-xl transition-all duration-300 translate-y-20 opacity-0 pointer-events-none flex items-center gap-2 max-w-sm w-11/12 justify-center font-sans">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-text" class="text-sm font-semibold">提示内容</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-50 border-t border-slate-200 py-6 text-center text-xs text-slate-400 mt-12">
+        <div class="max-w-5xl mx-auto px-4">
+            <p>© 3S 核心词汇复习集 (true-visit) - 词汇练习网页进阶版</p>
+            <p class="mt-1">由教育技术与排版技术专家团队精心打磨·完美适配平板端与 PC 浏览器</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Data and Controller logic -->
+    <script>
+        // WORD DATABASE WITH ROBUST MULTI-WORD COMPATIBILITY
+        const VOCAB_DATA = [
+            { id: 1, word: "true", pos: "adj.", meaning: "真实的；正确的", ipa: "/truː/", sentence: "The exciting story is based on a <u>true</u> event." },
+            { id: 2, word: "try", pos: "v./n.", meaning: "尝试；努力", ipa: "/traɪ/", sentence: "You must <u>try</u> your best to finish the English task." },
+            { id: 3, word: "tunnel", pos: "n.", meaning: "隧道", ipa: "/ˈtʌnl/", sentence: "The sleek train drove quickly through the dark <u>tunnel</u>." },
+            { id: 4, word: "turn", pos: "v./n.", meaning: "转弯；轮流", ipa: "/tɜːn/", sentence: "Please <u>turn</u> left when you reach the school gate." },
+            { id: 5, word: "twice", pos: "adv.", meaning: "两次；两倍", ipa: "/twaɪs/", sentence: "You should brush your teeth at least <u>twice</u> a day." },
+            { id: 6, word: "two", pos: "num.", meaning: "二；两个", ipa: "/tuː/", sentence: "I have <u>two</u> sweet apples in my lunch box." },
+            { id: 7, word: "umbrella", pos: "n.", meaning: "雨伞", ipa: "/ʌmˈbrelə/", sentence: "We must open the <u>umbrella</u> because it is raining hard." },
+            { id: 8, word: "under", pos: "prep.", meaning: "在……下面", ipa: "/ˈʌndə(r)/", sentence: "The cute brown puppy is sleeping soundly <u>under</u> the desk." },
+            { id: 9, word: "unit", pos: "n.", meaning: "单元；单位", ipa: "/ˈjuːnɪt/", sentence: "We are currently studying <u>unit</u> three of this book." },
+            { id: 10, word: "upstairs", pos: "adv./adj./n.", meaning: "在楼上；往楼上", ipa: "/ˌʌpˈsteəz/", sentence: "My bedroom is <u>upstairs</u> on the second floor." },
+            { id: 11, word: "use", pos: "v./n.", meaning: "使用；用途", ipa: "/juːz/", sentence: "Can I <u>use</u> your sharp pencil to write this letter?" },
+            { id: 12, word: "usually", pos: "adv.", meaning: "通常地", ipa: "/ˈjuːʒuəli/", sentence: "He <u>usually</u> goes to school by school bus." },
+            { id: 13, word: "vegetable", pos: "n.", meaning: "蔬菜", ipa: "/ˈvedʒtəbl/", sentence: "You should eat more fresh green <u>vegetable</u> salad." },
+            { id: 14, word: "village", pos: "n.", meaning: "村庄；乡村", ipa: "/ˈvɪlɪdʒ/", sentence: "They live in a quiet and beautiful <u>village</u> near the river." },
+            { id: 15, word: "visit", pos: "v./n.", meaning: "参观；拜访", ipa: "/ˈvɪzɪt/", sentence: "We plan to <u>visit</u> our grandmother on Saturday afternoon." }
+        ];
+
+        let masteredWords = new Set();
+        try {
+            const saved = localStorage.getItem('3s_vocab_mastered_set_v24');
+            if (saved) { masteredWords = new Set(JSON.parse(saved)); }
+        } catch(e) { console.log(e); }
+
+        function playSpeech(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-GB'; 
+                utterance.rate = 0.85; 
+                window.speechSynthesis.speak(utterance);
+            } else {
+                showToast("浏览器不支持语音播放", "fa-triangle-exclamation");
+            }
+        }
+
+        let toastTimeout;
+        function showToast(message, icon = "fa-circle-check") {
+            const toast = document.getElementById('custom-toast');
+            const toastIcon = document.getElementById('toast-icon');
+            const toastText = document.getElementById('toast-text');
+            
+            toastIcon.className = `fa-solid ${icon}`;
+            if (icon.includes('emerald') || icon.includes('check')) {
+                toastIcon.className += ' text-emerald-400';
+            } else if (icon.includes('exclamation') || icon.includes('triangle')) {
+                toastIcon.className += ' text-amber-400';
+            }
+            
+            toastText.textContent = message;
+            toast.classList.remove('opacity-0', 'translate-y-20', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-20', 'pointer-events-none');
+            }, 2500);
+        }
+
+        function toggleMastery(wordId) {
+            if (masteredWords.has(wordId)) {
+                masteredWords.delete(wordId);
+                showToast("已将该单词设为待复习", "fa-heart-crack");
+            } else {
+                masteredWords.add(wordId);
+                showToast("已归入“已掌握”词汇！", "fa-heart");
+            }
+            try { localStorage.setItem('3s_vocab_mastered_set_v24', JSON.stringify([...masteredWords])); } catch(e) {}
+            updateMasteryUI();
+        }
+
+        function updateMasteryUI() {
+            document.getElementById('mastery-counter').textContent = `${masteredWords.size}/${VOCAB_DATA.length}`;
+            renderWordListGrid();
+            updateCardMasteryIcon();
+        }
+
+        function switchTab(tabName) {
+            const sections = ['list', 'card', 'spell', 'translate', 'test'];
+            sections.forEach(s => {
+                document.getElementById(`view-${s}`).classList.add('hidden');
+                document.getElementById(`tab-${s}`).className = "flex-1 py-3 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800";
+            });
+
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).className = "flex-1 py-3 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 bg-white text-emerald-600 shadow-sm";
+
+            if (tabName === 'card') initCardView();
+            else if (tabName === 'spell') initSpellView();
+            else if (tabName === 'translate') initTranslateView();
+            else if (tabName === 'test') initTestView();
+        }
+
+        // --- 1. WORD LIST ---
+        function renderWordListGrid() {
+            const grid = document.getElementById('word-list-grid');
+            grid.innerHTML = '';
+            
+            VOCAB_DATA.forEach(item => {
+                const isMastered = masteredWords.has(item.id);
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `bg-white p-4.5 rounded-2xl border transition-all duration-300 flex items-center justify-between gap-3 ${isMastered ? 'border-emerald-100 bg-emerald-50/20' : 'border-slate-100 hover:border-slate-200'}`;
+                
+                itemDiv.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">#${item.id}</span>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h4 class="text-base font-extrabold text-slate-800 tracking-wide">${item.word}</h4>
+                                <span class="text-xs font-semibold text-slate-400 italic">${item.pos}</span>
+                            </div>
+                            <p class="text-xs text-emerald-600 font-medium font-sans mt-0.5">${item.ipa}</p>
+                            <p class="text-sm text-slate-600 font-semibold mt-1">${item.meaning}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="playSpeech('${item.word}')" class="w-10 h-10 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 rounded-full flex items-center justify-center transition-colors border border-slate-100">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                        <button onclick="toggleMastery(${item.id})" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors border border-slate-100 ${isMastered ? 'bg-amber-50 text-amber-500 border-amber-100' : 'bg-slate-50 text-slate-400 hover:text-amber-500'}">
+                            <i class="${isMastered ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(itemDiv);
+            });
+        }
+
+        async function playAllWords() {
+            for (let i = 0; i < VOCAB_DATA.length; i++) {
+                playSpeech(VOCAB_DATA[i].word);
+                await new Promise(resolve => setTimeout(resolve, 2200));
+            }
+        }
+
+        // --- 2. FLASHCARD ---
+        let currentCardIndex = 0;
+        let isCardFlipped = false;
+
+        function initCardView() {
+            currentCardIndex = 0;
+            isCardFlipped = false;
+            document.getElementById('flashcard-inner').classList.remove('card-flipped');
+            renderCard();
+        }
+
+        function renderCard() {
+            const item = VOCAB_DATA[currentCardIndex];
+            document.getElementById('card-progress-num').textContent = `Card ${currentCardIndex + 1} / ${VOCAB_DATA.length}`;
+            document.getElementById('card-front-index').textContent = `#${item.id}`;
+            document.getElementById('card-front-word').textContent = item.word;
+            document.getElementById('card-front-ipa').textContent = item.ipa;
+            
+            document.getElementById('card-back-index').textContent = `#${item.id}`;
+            document.getElementById('card-back-pos').textContent = item.pos;
+            document.getElementById('card-back-chinese').textContent = item.meaning;
+            document.getElementById('card-back-sentence').innerHTML = item.sentence;
+
+            updateCardMasteryIcon();
+            setTimeout(() => { if (!isCardFlipped) playSpeech(item.word); }, 300);
+        }
+
+        function flipCard() {
+            isCardFlipped = !isCardFlipped;
+            const cardInner = document.getElementById('flashcard-inner');
+            if (isCardFlipped) cardInner.classList.add('card-flipped');
+            else cardInner.classList.remove('card-flipped');
+        }
+
+        function speakWord(event) {
+            event.stopPropagation();
+            playSpeech(VOCAB_DATA[currentCardIndex].word);
+        }
+
+        function prevCard() {
+            if (isCardFlipped) flipCard();
+            setTimeout(() => {
+                currentCardIndex = (currentCardIndex - 1 + VOCAB_DATA.length) % VOCAB_DATA.length;
+                renderCard();
+            }, isCardFlipped ? 300 : 0);
+        }
+
+        function nextCard() {
+            if (isCardFlipped) flipCard();
+            setTimeout(() => {
+                currentCardIndex = (currentCardIndex + 1) % VOCAB_DATA.length;
+                renderCard();
+            }, isCardFlipped ? 300 : 0);
+        }
+
+        function markCurrentCardMastered() {
+            toggleMastery(VOCAB_DATA[currentCardIndex].id);
+        }
+
+        function updateCardMasteryIcon() {
+            const item = VOCAB_DATA[currentCardIndex];
+            const icon = document.getElementById('card-mastery-icon');
+            if (masteredWords.has(item.id)) icon.className = 'fa-solid fa-heart text-amber-500 text-xl';
+            else icon.className = 'fa-regular fa-heart text-slate-400 text-xl';
+        }
+
+        // --- 3. SPELLING CHALLENGE ---
+        let currentSpellIndex = 0;
+        let hintClickCount = 0;
+
+        function initSpellView() {
+            currentSpellIndex = 0;
+            hintClickCount = 0;
+            resetSpellFeedback();
+            renderSpell();
+        }
+
+        function renderSpell() {
+            const item = VOCAB_DATA[currentSpellIndex];
+            document.getElementById('spell-progress').textContent = `${currentSpellIndex + 1} / ${VOCAB_DATA.length}`;
+            document.getElementById('spell-pos').textContent = item.pos;
+            document.getElementById('spell-meaning').textContent = item.meaning;
+            
+            const tipSpan = document.getElementById('spell-format-tip');
+            if (item.word.includes(' ') || item.word.includes('-')) {
+                tipSpan.textContent = "注意：包含特殊结构";
+            } else {
+                tipSpan.textContent = "";
+            }
+
+            const inputField = document.getElementById('spell-input');
+            inputField.value = '';
+            inputField.disabled = false;
+            resetSpellFeedback();
+            
+            setTimeout(() => { playSpeech(item.word); }, 300);
+            inputField.focus();
+        }
+
+        function speakSpellWord() {
+            playSpeech(VOCAB_DATA[currentSpellIndex].word);
+        }
+
+        function resetSpellFeedback() {
+            document.getElementById('spell-feedback-icon').className = "absolute right-4 top-1/2 transform -translate-y-1/2 text-2xl hidden";
+            document.getElementById('spell-feedback-msg').className = "hidden text-center text-sm font-semibold p-3 rounded-xl";
+            document.getElementById('spell-input').className = "w-full text-center text-xl font-bold tracking-normal text-slate-800 border-2 border-slate-200 rounded-2xl py-4 px-6 focus:border-emerald-500 focus:ring-0 focus:outline-none transition-all";
+            hintClickCount = 0;
+        }
+
+        function checkSpell() {
+            const inputField = document.getElementById('spell-input');
+            const userAns = inputField.value.trim().toLowerCase().replace(/\s+/g, ' ');
+            const correctAns = VOCAB_DATA[currentSpellIndex].word.toLowerCase();
+            
+            const feedbackIcon = document.getElementById('spell-feedback-icon');
+            const feedbackMsg = document.getElementById('spell-feedback-msg');
+            
+            feedbackIcon.classList.remove('hidden');
+            feedbackMsg.classList.remove('hidden');
+            
+            if (userAns === correctAns) {
+                feedbackIcon.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i>`;
+                feedbackMsg.className = "text-center text-sm font-semibold p-3 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200";
+                feedbackMsg.innerHTML = `<i class="fa-solid fa-face-smile mr-1.5"></i> 太棒了！拼写完全正确！`;
+                inputField.className = "w-full text-center text-xl font-bold tracking-normal text-emerald-700 border-2 border-emerald-500 rounded-2xl py-4 px-6 bg-emerald-50/50 focus:outline-none transition-all";
+                
+                if (hintClickCount === 0) {
+                    masteredWords.add(VOCAB_DATA[currentSpellIndex].id);
+                    updateMasteryUI();
+                }
+                playSpeech(VOCAB_DATA[currentSpellIndex].word);
+                setTimeout(() => { nextSpell(); }, 1500);
+            } else {
+                feedbackIcon.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-500"></i>`;
+                feedbackMsg.className = "text-center text-sm font-semibold p-3 rounded-xl bg-rose-50 text-rose-700 border border-rose-200";
+                feedbackMsg.innerHTML = `<i class="fa-solid fa-face-frown mr-1.5"></i> 拼写不正确，再仔细检查一下吧！`;
+                inputField.className = "w-full text-center text-xl font-bold tracking-normal text-rose-700 border-2 border-rose-300 rounded-2xl py-4 px-6 bg-rose-50/50 focus:outline-none transition-all";
+            }
+        }
+
+        function showSpellAnswer() {
+            hintClickCount++;
+            const word = VOCAB_DATA[currentSpellIndex].word;
+            const inputField = document.getElementById('spell-input');
+            
+            if (hintClickCount === 1) {
+                let blurred = Array.from(word).map(char => (char === ' ' || char === '-') ? char : '_').join('');
+                inputField.value = word.charAt(0) + blurred.slice(1);
+                showToast("已为你显示首字母与字数提示！", "fa-lightbulb");
+            } else {
+                inputField.value = word;
+                showToast("已为你显示完整答案，可以临摹拼写哦！", "fa-circle-question");
+            }
+        }
+
+        function nextSpell() {
+            currentSpellIndex = (currentSpellIndex + 1) % VOCAB_DATA.length;
+            renderSpell();
+        }
+
+        document.getElementById('spell-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkSpell();
+        });
+
+        // --- 4. CONTEXTUAL TRANSLATION ---
+        function initTranslateView() {
+            const container = document.getElementById('translate-sentences-list');
+            container.innerHTML = '';
+
+            VOCAB_DATA.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = "bg-white p-5 rounded-2xl border border-slate-100 hover:border-emerald-100 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4";
+                
+                itemDiv.innerHTML = `
+                    <div class="space-y-1.5 flex-grow">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">#${item.id}</span>
+                            <span class="text-xs font-bold text-slate-400 font-sans">${item.word} [${item.pos}]</span>
+                        </div>
+                        <p class="text-base text-slate-700 font-medium leading-relaxed font-sans">
+                            ${item.sentence}
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 self-end md:self-auto min-w-[150px] justify-end">
+                        <button onclick="playSpeech('${item.word}')" class="w-10 h-10 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-400 rounded-full flex items-center justify-center transition-colors border border-slate-100">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                        <button onclick="toggleTranslationAnswer(this, '${item.meaning}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-w-[100px] text-center">
+                            查看译词
+                        </button>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function toggleTranslationAnswer(btn, correctAnswer) {
+            if (btn.textContent.trim() === '查看译词') {
+                btn.textContent = correctAnswer;
+                btn.className = "bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-w-[100px] text-center shadow-md shadow-emerald-100";
+            } else {
+                btn.textContent = '查看译词';
+                btn.className = "bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-w-[100px] text-center";
+            }
+        }
+
+        // --- 5. REVIEW TEST ---
+        let testQuestions = [];
+        let currentTestIdx = 0;
+        let testScore = 0;
+        let activeSelectedBtn = null;
+
+        function initTestView() {
+            document.getElementById('test-intro').classList.remove('hidden');
+            document.getElementById('test-play').classList.add('hidden');
+            document.getElementById('test-result').classList.add('hidden');
+        }
+
+        function startTest() {
+            testQuestions = generateTestQuestions();
+            currentTestIdx = 0;
+            testScore = 0;
+            
+            document.getElementById('test-intro').classList.add('hidden');
+            document.getElementById('test-play').classList.remove('hidden');
+            renderTestQuestion();
+        }
+
+        function generateTestQuestions() {
+            const shuffled = [...VOCAB_DATA].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 10);
+            
+            return selected.map(item => {
+                const type = Math.floor(Math.random() * 3);
+                const options = [item.meaning];
+                while (options.length < 4) {
+                    const randomDistractor = VOCAB_DATA[Math.floor(Math.random() * VOCAB_DATA.length)].meaning;
+                    if (!options.includes(randomDistractor)) { options.push(randomDistractor); }
+                }
+                const shuffledOptions = options.sort(() => 0.5 - Math.random());
+
+                return {
+                    vocab: item,
+                    type: type,
+                    questionTitle: getQuestionTitle(type, item),
+                    options: shuffledOptions,
+                    correctAns: type === 2 ? item.word.toLowerCase() : item.meaning
+                };
+            });
+        }
+
+        function getQuestionTitle(type, item) {
+            switch(type) {
+                case 0: return `单词 “${item.word}” 的中文释义是：`;
+                case 1: return `请认真听发音，这个发音对应的是哪一个中文词汇？`;
+                case 2: return `拼写填空：根据释义“${item.meaning}”拼写对应的英文词汇：`;
+                default: return '';
+            }
+        }
+
+        function renderTestQuestion() {
+            const q = testQuestions[currentTestIdx];
+            document.getElementById('test-progress-num').textContent = `${currentTestIdx + 1} / 10`;
+            document.getElementById('test-question-title').textContent = q.questionTitle;
+            
+            const flag = document.getElementById('test-question-type');
+            if (q.type === 0) flag.textContent = "英译中选择题";
+            if (q.type === 1) flag.textContent = "听音选义题";
+            if (q.type === 2) flag.textContent = "词汇拼写题";
+
+            const audioContainer = document.getElementById('test-audio-container');
+            const optionsContainer = document.getElementById('test-options');
+            const spellingContainer = document.getElementById('test-spelling-container');
+            const nextBtn = document.getElementById('test-next-btn');
+
+            audioContainer.classList.add('hidden');
+            optionsContainer.classList.add('hidden');
+            spellingContainer.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            activeSelectedBtn = null;
+
+            if (q.type === 0 || q.type === 1) {
+                optionsContainer.classList.remove('hidden');
+                optionsContainer.innerHTML = '';
+                if (q.type === 1) {
+                    audioContainer.classList.remove('hidden');
+                    speakTestWord();
+                }
+
+                q.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-4 rounded-xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/10 font-medium transition-all flex items-center justify-between";
+                    btn.innerHTML = `<span>${opt}</span><i class="fa-regular fa-circle text-slate-300"></i>`;
+                    btn.onclick = () => selectTestOption(btn, opt);
+                    optionsContainer.appendChild(btn);
+                });
+            } else if (q.type === 2) {
+                spellingContainer.classList.remove('hidden');
+                const sInput = document.getElementById('test-spelling-input');
+                const sTip = document.getElementById('test-spelling-tip');
+                
+                if (q.vocab.word.includes(' ') || q.vocab.word.includes('-')) {
+                    sTip.textContent = "包含特殊结构（空格或连字符）";
+                } else {
+                    sTip.textContent = "";
+                }
+                
+                sInput.value = '';
+                sInput.disabled = false;
+                sInput.className = "w-full text-center text-lg font-bold border-2 border-slate-200 rounded-2xl py-3 px-4 focus:border-emerald-500 focus:outline-none";
+                sInput.focus();
+            }
+        }
+
+        function speakTestWord() {
+            playSpeech(testQuestions[currentTestIdx].vocab.word);
+        }
+
+        function selectTestOption(btn, selectedOpt) {
+            if (activeSelectedBtn !== null) return;
+            activeSelectedBtn = btn;
+            
+            const q = testQuestions[currentTestIdx];
+            const nextBtn = document.getElementById('test-next-btn');
+            const checkIcon = btn.querySelector('i');
+            
+            if (selectedOpt === q.correctAns) {
+                btn.className = "w-full text-left p-4 rounded-xl border border-emerald-500 bg-emerald-50 text-emerald-800 font-semibold transition-all flex items-center justify-between";
+                checkIcon.className = "fa-solid fa-circle-check text-emerald-500";
+                testScore += 10;
+            } else {
+                btn.className = "w-full text-left p-4 rounded-xl border border-rose-400 bg-rose-50 text-rose-800 font-semibold transition-all flex items-center justify-between";
+                checkIcon.className = "fa-solid fa-circle-xmark text-rose-500";
+                
+                const options = document.getElementById('test-options').children;
+                for (let child of options) {
+                    if (child.textContent.trim() === q.correctAns) {
+                        child.className = "w-full text-left p-4 rounded-xl border border-emerald-500 bg-emerald-50 text-emerald-800 font-semibold transition-all flex items-center justify-between";
+                        child.querySelector('i').className = "fa-solid fa-circle-check text-emerald-500";
+                    }
+                }
+            }
+            nextBtn.classList.remove('hidden');
+        }
+
+        function submitTestSpelling() {
+            const inputField = document.getElementById('test-spelling-input');
+            const userAns = inputField.value.trim().toLowerCase().replace(/\s+/g, ' ');
+            const q = testQuestions[currentTestIdx];
+            const nextBtn = document.getElementById('test-next-btn');
+
+            if (userAns === '') {
+                showToast("请输入拼写后再提交！", "fa-triangle-exclamation");
+                return;
+            }
+            inputField.disabled = true;
+
+            if (userAns === q.correctAns) {
+                inputField.className = "w-full text-center text-lg font-bold border-2 border-emerald-500 rounded-2xl py-3 px-4 bg-emerald-50 text-emerald-800";
+                testScore += 10;
+                showToast("拼写正确！+10分", "fa-thumbs-up");
+            } else {
+                inputField.className = "w-full text-center text-lg font-bold border-2 border-rose-400 rounded-2xl py-3 px-4 bg-rose-50 text-rose-800";
+                showToast(`拼写不正确！正确答案是: ${q.vocab.word}`, "fa-face-frown");
+            }
+            nextBtn.classList.remove('hidden');
+        }
+
+        function nextTestQuestion() {
+            currentTestIdx++;
+            if (currentTestIdx < 10) renderTestQuestion();
+            else showTestResults();
+        }
+
+        document.getElementById('test-spelling-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !this.disabled) submitTestSpelling();
+        });
+
+        function showTestResults() {
+            document.getElementById('test-play').classList.add('hidden');
+            const resultSection = document.getElementById('test-result');
+            resultSection.classList.remove('hidden');
+            
+            document.getElementById('test-score-display').textContent = `${testScore} / 100`;
+            const icon = document.getElementById('test-result-icon');
+            const feedbackText = document.getElementById('test-result-feedback');
+
+            if (testScore === 100) {
+                icon.className = "w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mx-auto text-amber-500 text-4xl";
+                icon.innerHTML = `<i class="fa-solid fa-medal animate-bounce"></i>`;
+                feedbackText.textContent = "哇！极其完美！你已经100%拿下了这一批核心词汇和短语！";
+            } else if (testScore >= 80) {
+                icon.className = "w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-500 text-4xl";
+                icon.innerHTML = `<i class="fa-solid fa-star animate-pulse"></i>`;
+                feedbackText.textContent = "十分优秀！大部分词汇都已经记住了，再接再厉！";
+            } else {
+                icon.className = "w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-500 text-4xl";
+                icon.innerHTML = `<i class="fa-solid fa-pencil"></i>`;
+                feedbackText.textContent = "加油！可以多去“闪卡预习”或“词表”中温习后再来挑战吧。";
+            }
+        }
+
+        function restartTest() { startTest(); }
+
+        window.onload = function() {
+            updateMasteryUI();
+            renderWordListGrid();
+        };
+    </script>
+</body>
+</html>
